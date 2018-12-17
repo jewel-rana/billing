@@ -6,22 +6,16 @@
               <h2 class="page-title">{{ title }}</h2>
               <ul class="nav nav-tabs menuTab" id="myTab" role="tablist">
                 <li class="nav-item">
-                  <router-link to="/dashboard/requests" class="nav-link tabbed-menu bg-info" href="#" role="tab" title="Action Request"><i class="fa fa-user"></i> <span class="badge badge-warning">{{ requestcount }}</span></router-link>
-                </li>
-                <li class="nav-item">
                   <a class="nav-link tabbed-menu" @click.prevent="fetchData('All')" href="#" role="tab">All</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link tabbed-menu active" @click.prevent="fetchData('Active')" href="#">Active</a>
+                  <a class="nav-link tabbed-menu active" @click.prevent="fetchData('Pending')" href="#">Pending</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link tabbed-menu" @click.prevent="fetchData('Pending')" href="#">Pending</a>
+                  <a class="nav-link tabbed-menu" @click.prevent="fetchData('Accepted')" href="#">Accepted</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link tabbed-menu" @click.prevent="fetchData('Suspended')" href="#">Suspended</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" @click.prevent="createModal" href="#"><span class="icon icon-user"></span> Add new</a>
                 </li>
               </ul>
             </div>
@@ -32,39 +26,13 @@
                     <form method="POST" id="customerForms">
                       <div class="row">
                         <div class="col-md-3">
-                          <div class="dropdown">
-                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Bulk Action </button>
-                              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <a class="dropdown-item" href="#"><i class="fa fa-check"></i> Active</a>
-                                <a class="dropdown-item" href="#"><i class="fa fa-ban"></i> Suspend</a>
-                                <a class="dropdown-item" href="#"><i class="fa fa-times"></i> Delete</a>
-                              </div>
-                          </div>
                         </div>
                         <div class="col-md-9 pull-right">
-                          <div class="input-group input-group mb-2">
-                            <input v-model="keyword" type="text" class="form-control" placeholder="Search here..." name="search">
-                            <span class="input-group-append">
-                              <button class="btn btn-sm btn-primary" type="button"><i class="fa fa-search"></i> Search</button>
-                            </span>
-                            <div class="input-group-btn dropdown">
-                              <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Sort by </button>
-                              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <a class="dropdown-item" href="#">Most Dues</a>
-                                <a class="dropdown-item" href="#">Less Dues</a>
-                                <a class="dropdown-item" href="#">Newest on Top</a>
-                                <a class="dropdown-item" href="#">Oldest on Top</a>
-                              </div>
-                            </div>
-                          </div>
                         </div>
                       </div>
                       <table class="table table-striped table-bordered table-sm">
                         <thead>
                           <tr>
-                            <th>
-                              <input type="checkbox" name="" id="checkedall">
-                            </th>
                             <th>#</th>
                             <th sortable="true">Customer Name</th>
                             <th>Customer Type</th>
@@ -76,20 +44,17 @@
                           </tr>
                         </thead>
                         <tbody>
-                          <tr v-for="customer in customers" :key="customer.id">
-                            <th scope="row">
-                              <input v-model="ids" type="checkbox" name="ids[]" :value="customer.id">
-                            </th>
-                            <th scope="row">{{ customer.id }}</th>
-                            <td>{{ customer.name }}</td>
-                            <td>{{ customer.type }}</td>
-                            <td>{{ customer.address }}</td>
-                            <td>{{ customer.package_id }} ({{ customer.package_id }})</td>
-                            <td>{{ customer.package_id }}</td>
-                            <td>{{ customer.status }}</td>
+                          <tr v-for="item in items" :key="item.id">
+                            <th scope="row">{{ item.id }}</th>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.type }}</td>
+                            <td>{{ item.address }}</td>
+                            <td>{{ item.package_id }} ({{ item.package_id }})</td>
+                            <td>{{ item.package_id }}</td>
+                            <td>{{ item.status }}</td>
                             <td>
-                              <router-link :to="'/dashboard/customer/show/' + customer.id" class="btn btn-default btn-sm"><span class="fa fa-eye"></span></router-link>
-                              <button class="btn btn-primary btn-sm" @click=""nm                                                                                                              bbbbbbbbbbbbbb ><i class="fa fa-edit"></i></button>
+                              <router-link :to="'/dashboard/item/show/' + item.id" class="btn btn-default btn-sm"><span class="fa fa-eye"></span></router-link>
+                              <button class="btn btn-primary btn-sm" @click=""><i class="fa fa-edit"></i></button>
                               <button class="btn btn-danger btn-sm"><i class="fa fa-times"></i></button>
                             </td>
                           </tr>
@@ -217,8 +182,8 @@
     export default {
         data(){
             return {
-              title : 'Active Customers',
-              type : 'Active',
+              title : 'Pending Requests',
+              type : 'Pending',
               keyword : '',
               editmode : false,
               customers : {},
@@ -248,7 +213,7 @@
         },
         methods: {
           load(){
-            axios.get('/api/customer/?type=' + this.type )
+            axios.get('/api/request/?type=' + this.type )
             .then(( data ) => {
               console.log(data)
               this.customers = data.data.customers;
@@ -259,7 +224,7 @@
           },
           fetchData( type ){
             this.type = type;
-            this.title = type + ' Customers';
+            this.title = type + ' Requests';
             this.load();
           },
           loadChildZone(){

@@ -41,10 +41,10 @@
                           <th scope="row">{{ area.id }}</th>
                           <td>{{ area.name }}</td>
                           <td>{{ area.code }}</td>
-                          <td>{{ area.childs_count }}</td>
-                          <td>{{ area.customers_count }}</td>
+                          <td><router-link :to="'/dashboard/area/view/' + area.id" class="btn btn-default">{{ area.childs_count }}</router-link></td>
+                          <td><router-link :to="'/dashboard/area/view/' + area.id" class="btn btn-default">{{ area.customers_count }}</router-link></td>
                           <td>
-                            <router-link to="/dashboard/area/view/:key" class="btn btn-primary btn-sm"><span class="fa fa-eye"></span></router-link>
+                            <router-link :to="'/dashboard/area/view/' + area.id" class="btn btn-primary btn-sm"><span class="fa fa-eye"></span></router-link>
                             <button @click="editModal( area )" class="btn btn-success btn-sm"><span class="fa fa-edit"></span></button>
                             <button @click="deleteArea( area.id )" class="btn btn-danger btn-sm"><span class="fa fa-times"></span></button>
                           </td>

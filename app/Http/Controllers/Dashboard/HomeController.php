@@ -24,6 +24,14 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('dashboard.home.index')->withTitle('Dashboard');
+        $data = [
+            'totalCustomer' => 0,
+            'totalBill' => 0,
+            'totalCollection' => 0,
+            'totalDue' => 0,
+            'totalDiscount' => 0
+        ];
+
+        return view('dashboard.home.index', $data);
     }
 }

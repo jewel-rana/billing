@@ -6,7 +6,7 @@
               <h2 class="page-title">{{ title }}</h2>
               <ul class="nav nav-tabs menuTab" id="myTab" role="tablist">
                 <li class="nav-item">
-                  <router-link to="/dashboard/requests" class="nav-link tabbed-menu bg-info" href="#" role="tab" title="Action Request"><i class="fa fa-user"></i> <span class="badge badge-warning">{{ requestcount }}</span></router-link>
+                  <router-link to="/dashboard/requests" class="nav-link tabbed-menu bg-info" href="#" role="tab" title="Action Request">Requests <span class="badge badge-warning">{{ requestcount }}</span></router-link>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link tabbed-menu" @click.prevent="fetchData('All')" href="#" role="tab">All</a>
@@ -68,7 +68,7 @@
                             <th>#</th>
                             <th sortable="true">Customer Name</th>
                             <th>Customer Type</th>
-                            <th>Location</th>
+                            <th>Zone / Area</th>
                             <th>Packege</th>
                             <th>Current Due</th>
                             <th>Status</th>
@@ -76,23 +76,28 @@
                           </tr>
                         </thead>
                         <tbody>
-                          <tr v-for="customer in customers" :key="customer.id">
+                          <tr v-for="customer in customers.data" :key="customer.id">
                             <th scope="row">
                               <input v-model="ids" type="checkbox" name="ids[]" :value="customer.id">
                             </th>
                             <th scope="row">{{ customer.id }}</th>
                             <td>{{ customer.name }}</td>
                             <td>{{ customer.type }}</td>
-                            <td>{{ customer.address }}</td>
-                            <td>{{ customer.package_id }} ({{ customer.package_id }})</td>
-                            <td>{{ customer.package_id }}</td>
+                            <td>{{ customer.area.name }}</td>
+                            <td>{{ customer.package.name }} ({{ customer.package.price}})</td>
+                            <td>{{ customer.dues }}</td>
                             <td>{{ customer.status }}</td>
                             <td>
                               <router-link :to="'/dashboard/customer/show/' + customer.id" class="btn btn-default btn-sm"><span class="fa fa-eye"></span></router-link>
-                              <button class="btn btn-primary btn-sm" @click=""nm                                                                                                              bbbbbbbbbbbbbb ><i class="fa fa-edit"></i></button>
-                              <button class="btn btn-danger btn-sm"><i class="fa fa-times"></i></button>
+                              <button class="btn btn-primary btn-sm" @click.prevent="editModal( customer )"><i class="fa fa-edit"></i></button>
+                              <button class="btn btn-danger btn-sm" @click.prevent="deleteCustomer(customer.id)"><i class="fa fa-times"></i></button>
                             </td>
                           </tr>
+                        <tr v-if="customers.length === 0">
+                          <td colspan="9" class="alert alert-info text-center">
+                            <h4>No customers found</h4>
+                          </td>
+                        </tr>
                         </tbody>
                       </table>
                     </form>
@@ -174,7 +179,7 @@
                             </select>
                           </div>
                           <div class="form-group col-sm-6">
-                            <select v-model="area_id" name="area_id" class="form-control">
+                            <select v-model="form.area_id" name="area_id" class="form-control">
                               <option value="">Select Area</option>
                               <option v-for="area in areas" :key="area.id" :value="area.id">{{ area.name }}</option>
                             </select>
@@ -226,6 +231,7 @@
               zones : {},
               areas : {},
               ids : [],
+              requestcount : 0,
               form: new Form({
                 id : '',
                 name : '',
@@ -278,6 +284,7 @@
             this.form.reset();
             $('#appModal').modal('show');
             this.form.fill( customer );
+            this.loadChildZone();
           },
           create(){
             this.$Progress.start();
@@ -307,21 +314,51 @@
           },
           update(){
             this.$Progress.start();
-            this.form.put('/api/customer/' + this.form.id).then(() => {
-              //form is success
-              $('#appModal').modal('hide');
-              //show notification
-              toast({
-                type: 'success',
-                title: 'Customer information updated.'
-              });
+            this.form.put('/api/customer/' + this.form.id).then((response) => {
+              if( response.data.success == true ) {
+                //form is success
+                $('#appModal').modal('hide');
+                //show notification
+                toast({
+                  type: 'success',
+                  title: 'Customer information updated.'
+                });
 
-              Fire.$emit('AfterAction');
+                Fire.$emit('AfterAction');
+              } else {
+                toast({
+                  type: 'error',
+                  title: response.data.msg
+                });
+              }
               //Finish ProgressBar
               this.$Progress.finish();
             }).catch(() => {
               //catching errors
               this.$Progress.fail();
+            });
+          },
+          deleteCustomer( customerID ) {
+            swal({
+              title: 'Are you sure?',
+              text: "You won't be able to revert this!",
+              type: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+              if (result.value) {
+                axios.delete('/api/customer/' + customerID)
+                .then(() => {
+                  Fire.$emit('AfterAction');
+                  swal(
+                    'Deleted!',
+                    'Customer has been deleted.',
+                    'success'
+                  )
+                }).catch(() => {})
+              }
             });
           }
         },
@@ -333,6 +370,7 @@
               $(parent).find('.tabbed-menu').removeClass('active');
               $(this).addClass('active');
           });
+          Fire.$on('AfterAction', () => { this.load() });
         }
     }
 </script>

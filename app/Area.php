@@ -8,13 +8,18 @@ class Area extends Model
 {
     public $timestamps = false;
 
-    public function customers()
+    public function zoneCustomers()
+    {
+    	return $this->hasMany(Customer::class, 'zone_id', 'id');
+    }
+
+    public function areaCustomers()
     {
     	return $this->hasMany(Customer::class, 'area_id', 'id');
     }
 
     public function childs()
     {
-    	return $this->hasMany(Area::class, 'parent', 'id');
+        return $this->hasMany(Area::class, 'parent', 'id');
     }
 }

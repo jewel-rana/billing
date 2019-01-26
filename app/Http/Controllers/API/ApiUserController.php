@@ -8,14 +8,23 @@ use App\User;
 
 class ApiUserController extends Controller
 {
+    protected $success;
+
+    public function __construct()
+    {
+        $this->success = 200;
+    }
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index( Request $request )
     {
-        return User::latest()->paginate(15);
+        $type = ( $request->type ) ? $request->type : 'user';
+        $items = User::where('type', $type)->latest()->paginate(15);
+
+        return response()->json(['success' => true, 'data' => $items], $this->success);
     }
 
     /**
@@ -26,7 +35,17 @@ class ApiUserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        
+        $user = new \App\User;
+        $user->username = $request->username;
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->gender = $request->gender;
+        $user->save();
+
+        if( $user->id ){
+            return response()->json(['success' => true], $this->success);
+        }
     }
 
     /**
@@ -37,7 +56,9 @@ class ApiUserController extends Controller
      */
     public function show($id)
     {
-        //
+        $user = Auth::user();
+
+        return response()->json(['success' => true, 'data' => $user], $this->success);
     }
 
     /**
@@ -60,6 +81,10 @@ class ApiUserController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $user = \App\User::find( $id );
+
+        $user->delete();
+
+        return response()->json(['success' => true], $this->success);
     }
 }

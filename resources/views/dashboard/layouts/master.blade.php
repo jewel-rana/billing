@@ -57,7 +57,7 @@
             <li><router-link to="/dashboard/package"> <i class="icon-grid"></i>Packages</router-link></li>
             <li><router-link to="/dashboard/billing"> <i class="fa fa-bar-chart"></i>Billings</router-link></li>
             <li><router-link to="/dashboard/report"> <i class="fa fa-bar-chart"></i>Reports</router-link></li>
-            <li> <router-link to="/dashboard/management"><i class="icon-screen"> </i>Management</router-link></li>
+            <li> <router-link to="/dashboard/manage"><i class="icon-screen"> </i>Management</router-link></li>
           </ul>
         </div>
       </div>
@@ -69,10 +69,22 @@
           <div class="container-fluid">
             <div class="navbar-holder d-flex align-items-center justify-content-between">
               <div class="navbar-header">
-                <a href="index.html" class="navbar-brand">
-                  <div class="brand-text d-none d-md-inline-block"><strong class="text-primary">Dashboard</strong></div></a></div>
+                <span class="headerBills">Total Customers<br>Tk. {{ $totalCustomer }}</span>
+              </div>
+              <span class="headerBills bg-info">Total Bills<br>Tk. {{ $totalBill }}</span>
+              <span class="headerBills bg-danger">Total Dues<br>Tk. {{ $totalDue }}</span>
+              <span class="headerBills bg-success">Total Collections<br>Tk. {{ $totalCollection }}</span>
+              <span class="headerBills bg-warning">Total Discounts<br>Tk. {{ $totalDiscount }}</span>
               <ul class="nav-menu list-unstyled d-flex flex-md-row align-items-md-center">
-                <li class="nav-item"><a href="login.html" class="nav-link logout"> <span class="d-none d-sm-inline-block">Logout</span><i class="fa fa-sign-out"></i></a></li>
+                <li class="nav-item">
+                  {{ Form::open(['route' => 'logout', 'method' => 'POST']) }}
+                  {{ @csrf_field() }}
+                  <button class="nav-link logout" type="submit"> 
+                    <span class="d-none d-sm-inline-block">Logout</span>
+                    <i class="fa fa-sign-out"></i>
+                  </button>
+                  {{ Form::close() }}
+                </li>
               </ul>
             </div>
           </div>

@@ -13,8 +13,10 @@ import popper from 'popper.js';
 import progressbar from 'vue-progressbar';
 import { Form, HasError, AlertError } from 'vform';
 import swal from 'sweetalert2';
+import { ModelSelect } from 'vue-search-select';
 
 //constant functions
+const compiler = require('vue-template-compiler');
 const toast = swal.mixin({
     toast: true,
     position: 'top-end',
@@ -43,19 +45,31 @@ Vue.use(progressbar, {
 
 //vue routes
 let routes = [
+    { path: '/home', component: require('./components/dashboard/home/Index.vue') },
     { path: '/dashboard', component: require('./components/dashboard/home/Index.vue') },
 	{ path: '/dashboard/location', component: require('./components/dashboard/location/Index.vue') },
     { path: '/dashboard/customer', component: require('./components/dashboard/customer/Index.vue') },
     { path: '/dashboard/customer/show/:id', component: require('./components/dashboard/customer/Show.vue') },
     { path: '/dashboard/area', component: require('./components/dashboard/area/Index.vue') },
     { path: '/dashboard/area/view/:id', component: require('./components/dashboard/area/View.vue') },
+    { path: '/dashboard/area/customer/:id', component: require('./components/dashboard/area/Customer.vue') },
     { path: '/dashboard/package', component: require('./components/dashboard/package/Index.vue') },
+    { path: '/dashboard/package/view/:id', component: require('./components/dashboard/package/View.vue') },
     { path: '/dashboard/billing', component: require('./components/dashboard/billing/Index.vue') },
+    { path: '/dashboard/billing/info', component: require('./components/dashboard/billing/Info.vue') },
+    { path: '/dashboard/billing/pay', component: require('./components/dashboard/billing/Pay.vue') },
+    { path: '/dashboard/billing/due/list', component: require('./components/dashboard/billing/DueList.vue') },
+    { path: '/dashboard/billing/payment/list', component: require('./components/dashboard/billing/Payment.vue') },
     { path: '/dashboard/report', component: require('./components/dashboard/report/Index.vue') },
-    { path: '/dashboard/management', component: require('./components/dashboard/management/Index.vue') },
+    { path: '/dashboard/report/monthly', component: require('./components/dashboard/report/Monthly.vue') },
+    { path: '/dashboard/report/anual', component: require('./components/dashboard/report/Anual.vue') },
+    { path: '/dashboard/manage', component: require('./components/dashboard/management/User.vue') },
+    { path: '/dashboard/manage/users', component: require('./components/dashboard/management/User.vue') },
+    { path: '/dashboard/manage/admins', component: require('./components/dashboard/management/Admin.vue') },
+    { path: '/dashboard/manage/roles', component: require('./components/dashboard/management/Role.vue') },
+    { path: '/dashboard/manage/permissions', component: require('./components/dashboard/management/Permission.vue') },
     { path: '/dashboard/requests', component: require('./components/dashboard/requests/Index.vue') }
 ];
-
 const router = new VueRouter({
     mode: 'history',
 	routes //short for routes: routes

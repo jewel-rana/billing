@@ -25,6 +25,18 @@
           <div class="table-responsive">
             <div class="tab-content" id="myTabContent">
               <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                <div class="row">
+                        <div class="col-md-3">
+                        </div>
+                        <div class="col-md-9 pull-right">
+                          <div class="input-group input-group mb-2">
+                            <input v-model="keyword" type="text" class="form-control" placeholder="Search here..." name="search">
+                            <span class="input-group-append">
+                              <button class="btn btn-sm btn-primary" type="button"><i class="fa fa-search"></i> Search</button>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     <table class="table table-striped table-bordered table-sm">
                       <thead>
                         <tr>
@@ -37,16 +49,21 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-for="area in areas.data" :key="area.id">
+                        <tr v-for="area in areas" :key="area.id">
                           <th scope="row">{{ area.id }}</th>
                           <td>{{ area.name }}</td>
                           <td>{{ area.code }}</td>
                           <td><router-link :to="'/dashboard/area/view/' + area.id" class="btn btn-default">{{ area.childs_count }}</router-link></td>
-                          <td><router-link :to="'/dashboard/area/view/' + area.id" class="btn btn-default">{{ area.customers_count }}</router-link></td>
+                          <td><router-link :to="'/dashboard/area/customer/' + area.id" class="btn btn-default">{{ area.zone_customers_count }}</router-link></td>
                           <td>
                             <router-link :to="'/dashboard/area/view/' + area.id" class="btn btn-primary btn-sm"><span class="fa fa-eye"></span></router-link>
                             <button @click="editModal( area )" class="btn btn-success btn-sm"><span class="fa fa-edit"></span></button>
                             <button @click="deleteArea( area.id )" class="btn btn-danger btn-sm"><span class="fa fa-times"></span></button>
+                          </td>
+                        </tr>
+                        <tr v-if="areas.length === 0">
+                          <td colspan="7" class="alert alert-info text-center">
+                            <h4>No areas found</h4>
                           </td>
                         </tr>
                       </tbody>
@@ -64,26 +81,26 @@
                     <div class="modal-content">
                       <form @submit.prevent="editmode ? update() : create()">
                       <div class="modal-header modal-header-colored">
-                        <h3 v-show="!editmode" class="modal-title">Create new area</h3>
-                        <h3 v-show="editmode" class="modal-title">Update area</h3>
+                        <h3 v-show="!editmode" class="modal-title">Create new Zone / Area</h3>
+                        <h3 v-show="editmode" class="modal-title">Update Zone / Area</h3>
                         <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="mdi mdi-close"></span></button>
                       </div>
                       <div class="modal-body form">
                         <div class="form-group">
-                          <input v-model="form.name" type="text" name="name" placeholder="Area Name" 
+                          <input v-model="form.name" type="text" name="name" placeholder="Area / Zone Name" 
                             class="form-control" :class="{ 'is-invalid': form.errors.has('name') }" required>
                           <has-error :form="form" field="name"></has-error>
                         </div>
 
                         <div class="form-group">
-                          <input v-model="form.code" type="text" name="code" placeholder="Area Code" 
+                          <input v-model="form.code" type="text" name="code" placeholder="Area / Zone Code" 
                             class="form-control" :class="{ 'is-invalid': form.errors.has('code') }">
                           <has-error :form="form" field="code"></has-error>
                         </div>
                         <div class="form-group">
                             <select v-model="form.parent" class="form-control" :class="{ 'is-invalid': form.errors.has('parent') }">
                               <option value="0" selected="selected">Select Parent</option>
-                              <option></option>
+                              <option v-for="area in areas" :key="area.id" :value="area.id">{{ area.name }}</option>
                             </select>
                         </div>
                       </div>
@@ -102,9 +119,10 @@
     export default {
         data(){
             return {
-              title : 'All Areas',
+              title : 'All Zone',
               editmode : false,
               areas : {},
+              keyword: '',
               form: new Form({
                 id : '',
                 name : '',
@@ -115,7 +133,9 @@
         },
         methods: {
           load(){
-            axios.get('/api/area').then(( data ) => { this.areas = data.data } );
+            axios.get('/api/area').then(( data ) => { 
+              this.areas = data.data.data;
+            } );
           },
           fetchData( type ){
             this.load();

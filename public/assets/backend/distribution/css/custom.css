@@ -119,3 +119,11 @@ body {
 footer.main-footer {
     padding-left: 60px;
 }
+.headerBills {
+	width: auto;
+	padding: 6px 15px;
+	color: #fff;
+	background: #0ab3c0;
+	margin: -15px 0;
+	height: 70px;
+}

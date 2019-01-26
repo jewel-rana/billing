@@ -1,24 +1,50 @@
 export default class Timer {
   constructor (callback, delay) {
-    let id, started, running
-    let remaining = delay
+    let id, started, remaining = delay
+    this.running = false
+
     this.start = function () {
-      running = true
-      started = new Date()
-      id = setTimeout(callback, remaining)
+      if (!this.running) {
+        this.running = true
+        started = new Date()
+        id = setTimeout(callback, remaining)
+      }
+      return remaining
     }
+
     this.stop = function () {
-      running = false
-      clearTimeout(id)
-      remaining -= new Date() - started
+      if (this.running) {
+        this.running = false
+        clearTimeout(id)
+        remaining -= new Date() - started
+      }
+      return remaining
     }
-    this.getTimerLeft = function () {
+
+    this.increase = function (n) {
+      const running = this.running
       if (running) {
+        this.stop()
+      }
+      remaining += n
+      if (running) {
+        this.start()
+      }
+      return remaining
+    }
+
+    this.getTimerLeft = function () {
+      if (this.running) {
         this.stop()
         this.start()
       }
       return remaining
     }
+
+    this.isRunning = function () {
+      return this.running
+    }
+
     this.start()
   }
 }

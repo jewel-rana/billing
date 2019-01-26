@@ -24,14 +24,48 @@ class AreaApiController extends Controller
 
     public function index()
     {
-        return Area::withCount(['customers', 'childs'])->orderByDesc('name')->paginate(15);
+        $parent = ( int ) ( isset( $_GET['id'] ) && $_GET['id'] != null ) ? $_GET['id'] : 0;
+        return Area::withCount(['zoneCustomers', 'areaCustomers', 'childs'])->where('parent', $parent)->orderByDesc('name')->paginate(15);
     }
 
     public function childs( $parent )
     {
-        $childs = Area::select('id', 'name')->where('parent', $parent)->orderByAsc('name')->get();
+        $childs = Area::select('id', 'name')->where('parent', $parent)->orderBy('name', 'ASC')->get();
 
         return response()->json(['success' => true, 'childs' => $childs ], $this->success);
+    }
+
+    public function customers( Request $request, $id )
+    {
+        $areaId = ( int ) ( $request->get('area') ) ? $request->get('area') : $id;
+
+        if( !$areaId )
+            return response()->json(['success' => false], $this->success);
+
+        //get area info
+        $area = \App\Area::find( $areaId );
+
+        //fetch all customers withing this area
+        $items = \App\Customer::with(['dues', 'package'])->where('area_id', $areaId)->orWhere('zone_id', $areaId )->get();
+
+        $arr = array();
+        if( $items->count() > 0 ) {
+            foreach( $items as $item ) {
+                $row['id'] = $item->id;
+                $row['name'] = $item->name;
+                $row['package'] = $item->package['name'] . ' (' . $item->package['price'] . ')';
+                $row['dues'] = $this->_dues( $item->due );
+
+                array_push( $arr, $row );
+            }
+        }
+
+        return response()->json(['success' => true, 'info' => $area, 'customers' => $arr], $this->success);
+    }
+
+    protected function _dues( $arr )
+    {
+        return 0;
     }
 
     /**
@@ -77,9 +111,10 @@ class AreaApiController extends Controller
     public function show( $id )
     {
         $item = Area::findOrFail( $id );
+        $parents = Area::select('name', 'id')->where('parent', 0)->get();
 
         //return json response
-        return response()->json(['success' => true, 'data' => $item], $this->success );
+        return response()->json(['success' => true, 'data' => $item, 'parents' => $parents], $this->success );
     }
 
     /**
@@ -106,7 +141,7 @@ class AreaApiController extends Controller
         $area = Area::findOrFail( $id );
         $area->name = $request->name;
         $area->code = $request->code;
-        $area->parent = ( $request->parent ) ? $request->parent : $area->parent;
+        $area->parent = $request->parent;
 
         $area->save();
 

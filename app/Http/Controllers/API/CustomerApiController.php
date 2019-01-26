@@ -35,21 +35,7 @@ class CustomerApiController extends Controller
         if( $type != 'All')
             $query->where('status', $status);
 
-        $query = $query->paginate(25);
-
-        $customers = [];
-        if( !empty( $query ) ) :
-            foreach( $query as $customer ) :
-                $row['id'] = $customer->id;
-                $row['name'] = $customer->name;
-                $row['type'] = ucfirst( $customer->type );
-                $row['location'] = $customer->area['name'];
-                $row['package'] = $customer->package['name'] . ' (' . $customer->package['price'] . ')';
-                $row['due'] = 0;
-                $row['status'] = $this->_customerStatus( $customer->status );
-                array_push( $customers, $row );
-            endforeach;
-        endif;
+        $customers = $query->paginate(25);
 
         $packages = \App\Package::select('id', 'name', 'price')->get();
 
@@ -117,8 +103,8 @@ class CustomerApiController extends Controller
             $customer->zone_id = $request->zone_id;
             $customer->area_id = $request->area_id;
             $customer->type = ( $request->type ) ? $request->type : 'home';
-            $customer->home_phone = $request->cell_1;
-            $customer->office_phone = $request->cell_2;
+            $customer->cell_1 = $request->cell_1;
+            $customer->cell_2 = $request->cell_2;
             $customer->mikrotik_id = $request->mikrotik_id;
             $customer->remote_ip = $request->remote_ip;
             $customer->remote_mac = $request->remote_mac;
@@ -130,6 +116,14 @@ class CustomerApiController extends Controller
 
             //return success of fail message
             if( $customer->id ) :
+
+                //send new Activation request to Admin
+                $req = new \App\Request;
+                $req->customer_id = $customer->id;
+                $req->type = 'new_line_activation';
+                $req->action_date = time();
+                $req->save();
+
                 return response()->json(['success' => true], $this->success );
             else :
                 return response()->json(['success' => false, 'msg' => 'Sorry! cannot save customer.'], $this->success);
@@ -139,6 +133,14 @@ class CustomerApiController extends Controller
         endif;
     }
 
+    public function getSuggestions( Request $request )
+    {
+        $items = ( $request->qry ) ? \App\Customer::with('area')->where('name', 'like', '%' . $request->qry . '%')->get() : [];
+
+        return response()->json(['success' => true, 'data' => $items], $this->success);
+    }
+
+
     /**
      * Display the specified resource.
      *
@@ -147,7 +149,7 @@ class CustomerApiController extends Controller
      */
     public function show($id)
     {
-        $items = Package::findOrFail( $id );
+        $items = \App\Package::findOrFail( $id );
 
         //return json response
         return response()->json(['success' => true, 'data' => $items], $this->success );
@@ -165,8 +167,6 @@ class CustomerApiController extends Controller
         //form validation rules
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:191',
-            'username' => 'required|unique:customers,username,' . $request->username,
-            'email' => 'required|unique:users,email,' . $request->email,
             'type' => 'required|string',
             'zone_id' => 'required|numeric|exists:areas,id',
             'package_id' => 'required|numeric|exists:packages,id',
@@ -179,21 +179,22 @@ class CustomerApiController extends Controller
             return response()->json(['success'=> false, 'msg' => $validator->errors()->first()], $this->success );
 
         //Saving data
-        $customer = new customer();
+        $customer = Customer::find( $id );
         $customer->name = $request->name;
         $customer->fathers_name = $request->fathers_name;
         $customer->mothers_name = $request->mothers_name;
         $customer->zone_id = $request->zone_id;
         $customer->area_id = $request->area_id;
+        $customer->cell_1 = $request->cell_1;
+        $customer->cell_2 = $request->cell_2;
+        $customer->address = $request->address;
         $customer->type = ( $request->type ) ? $request->type : 'home';
-        $customer->home_phone = $request->cell_1;
-        $customer->office_phone = $request->cell_2;
         $customer->mikrotik_id = $request->mikrotik_id;
         $customer->remote_ip = $request->remote_ip;
         $customer->remote_mac = $request->remote_mac;
-        $customer->package_id = $request->package_id;
-        // $customer->monthly_discount = $request->monthly_discount;
-        // $customer->cable_cost = $request->cable_cost;
+        $customer->package_id = $customer->package_id;
+        // $customer->monthly_discount = ( $request->monthly_discount ) ? $request->monthly_discount : $customer->monthly_discount;
+        // $customer->cable_cost = ( $request->cable_cost ) ? $request->cable_cost : $customer->cable_cost;
 
         $customer->save();
 

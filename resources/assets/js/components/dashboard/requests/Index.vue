@@ -6,7 +6,7 @@
               <h2 class="page-title">{{ title }}</h2>
               <ul class="nav nav-tabs menuTab" id="myTab" role="tablist">
                 <li class="nav-item">
-                  <a class="nav-link tabbed-menu" @click.prevent="fetchData('All')" href="#" role="tab">All</a>
+                  <router-link class="nav-link tabbed-menu" to="/dashboard/customer" role="tab"> <i class="fa fa-chevron-left"></i> back to Customers</router-link>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link tabbed-menu active" @click.prevent="fetchData('Pending')" href="#">Pending</a>
@@ -35,27 +35,23 @@
                           <tr>
                             <th>#</th>
                             <th sortable="true">Customer Name</th>
-                            <th>Customer Type</th>
-                            <th>Location</th>
-                            <th>Packege</th>
-                            <th>Current Due</th>
+                            <th>Request Type</th>
+                            <th>Package</th>
                             <th>Status</th>
                             <th class="text-center" style="text-align:center; width:120px;">Action</th>
                           </tr>
                         </thead>
                         <tbody>
-                          <tr v-for="item in items" :key="item.id">
+                          <tr v-for="item in requests" :key="item.id">
                             <th scope="row">{{ item.id }}</th>
-                            <td>{{ item.name }}</td>
+                            <td>{{ item.customer_name }}</td>
                             <td>{{ item.type }}</td>
-                            <td>{{ item.address }}</td>
-                            <td>{{ item.package_id }} ({{ item.package_id }})</td>
-                            <td>{{ item.package_id }}</td>
-                            <td>{{ item.status }}</td>
+                            <td>{{ item.customer_package }} ({{ item.package_price }} Tk)</td>
+                            <td>{{ item.status_label }}</td>
                             <td>
-                              <router-link :to="'/dashboard/item/show/' + item.id" class="btn btn-default btn-sm"><span class="fa fa-eye"></span></router-link>
-                              <button class="btn btn-primary btn-sm" @click=""><i class="fa fa-edit"></i></button>
-                              <button class="btn btn-danger btn-sm"><i class="fa fa-times"></i></button>
+                              <button class="btn btn-primary btn-sm" @click.prevent="requestView(item.id, 'cancel')"><i class="fa fa-eye"></i></button>
+                              <button v-show="item.status === 0" class="btn btn-success btn-sm" @click.prevent="requestAction(item.id, 'accept')"><i class="fa fa-check"></i></button>
+                              <button v-show="item.status === 0" class="btn btn-danger btn-sm" @click.prevent="requestAction(item.id, 'cancel')"><i class="fa fa-times"></i></button>
                             </td>
                           </tr>
                         </tbody>
@@ -67,115 +63,6 @@
             </div>
           </div>
         </div>
-
-
-            <div class="modal colored-header colored-header-success custom-width fade" id="appModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-              <div class="modal-dialog" role="document">  
-                    <div class="modal-content">
-                      <form @submit.prevent="editmode ? update() : create()">
-                      <div class="modal-header modal-header-colored">
-                        <h3 v-show="!editmode" class="modal-title">Create new user</h3>
-                        <h3 v-show="editmode" class="modal-title">Update user's info</h3>
-                        <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                      </div>
-                      <div class="modal-body form">
-                        <div class="form-group">
-                          <input v-model="form.name" type="text" name="name" placeholder="Name" 
-                            class="form-control" :class="{ 'is-invalid': form.errors.has('name') }">
-                          <has-error :form="form" field="name"></has-error>
-                        </div>
-                        <div class="row no-margin-y">
-                          <div class="form-group col-sm-6">
-                            <input v-model="form.fathers_name" class="form-control" type="text" placeholder="Fathers Name" :class="{ 'is-invalid': form.errors.has('fathers_name') }">
-                          </div>
-                          <div class="form-group col-sm-6">
-                            <input v-model="form.mothers_name" class="form-control" type="text" placeholder="Mothers Name" :class="{ 'is-invalid': form.errors.has('mothers_name') }">
-                          </div>
-                        </div>
-                        <div class="row no-margin-y">
-                          <div class="form-group col-sm-6">
-                            <input v-model="form.username" class="form-control" type="text" placeholder="Username" :class="{ 'is-invalid': form.errors.has('username') }">
-                          </div>
-                          <div class="form-group col-sm-6">
-                            <input v-model="form.email" class="form-control" type="text" placeholder="Email" :class="{ 'is-invalid': form.errors.has('email') }">
-                          </div>
-                        </div>
-                        <div class="row no-margin-y">
-                          <div class="form-group col-sm-6">
-                            <input v-model="form.cell_1" class="form-control" placeholder="Contact number (Home)" :class="{ 'is-invalid': form.errors.has('cell_1') }">
-                          </div>
-                          <div class="form-group col-sm-6">
-                            <input v-model="form.cell_2" class="form-control" placeholder="Contact Number (Office)" :class="{ 'is-invalid': form.errors.has('cell_2') }">
-                          </div>
-                        </div>
-                        <div class="row no-margin-y">
-                          <div class="form-group col-sm-6">
-                            <select v-model="form.type" name="type" class="form-control" required>
-                              <option value="" selected="selected">Select Type</option>
-                              <option value="home">Home</option>
-                              <option value="office">Office</option>
-                              <option value="store">Store</option>
-                              <option value="bank">Bank / Bima / NGO</option>
-                              <option value="atm_booth">ATM Booth</option>
-                            </select>
-                          </div>
-                          <div class="form-group col-sm-6">
-                            <input v-model="form.mikrotik_id" class="form-control" placeholder="Mikrotik ID" :class="{ 'is-invalid': form.errors.has('mikrotik_id') }">
-                          </div>
-                        </div>
-                        <div class="row no-margin-y">
-                          <div class="form-group col-sm-6">
-                            <input v-model="form.remote_ip" class="form-control" placeholder="Remote IP" :class="{ 'is-invalid': form.errors.has('remote_ip') }">
-                          </div>
-                          <div class="form-group col-sm-6">
-                            <input v-model="form.remote_mac" class="form-control" placeholder="Remote Mac" :class="{ 'is-invalid': form.errors.has('remote_mac') }">
-                          </div>
-                        </div>
-                        <div class="row no-margin-y">
-                          <div class="form-group col-sm-6">
-                            <select v-model="form.zone_id" name="zone_id" @change="loadChildZone" class="form-control" required>
-                              <option value="">Select Zone</option>
-                              <option v-for="zone in zones" :key="zone.id" :value="zone.id">{{ zone.name }}</option>
-                            </select>
-                          </div>
-                          <div class="form-group col-sm-6">
-                            <select v-model="area_id" name="area_id" class="form-control">
-                              <option value="">Select Area</option>
-                              <option v-for="area in areas" :key="area.id" :value="area.id">{{ area.name }}</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div class="form-group">
-                          <textarea v-model="form.address" name="address" placeholder="Address" 
-                            class="form-control" :class="{ 'is-invalid': form.errors.has('address') }"></textarea>
-                          <has-error :form="form" field="email"></has-error>
-                        </div>
-                        <div class="form-group">
-                          <select v-model="form.package_id" name="packege" placeholder="Billing Package" 
-                            class="form-control" :class="{ 'is-invalid': form.errors.has('packege') }" required>
-                            <option value="">Select Package</option>
-                            <option v-for="package in packages" :key="package.id" :value="package.id">{{ package.name }} {{ package.price }}</option>
-                          </select>
-                          <has-error :form="form" field="packege"></has-error>
-                        </div>
-                        <div class="row no-margin-y">
-                          <div class="form-group col-sm-6">
-                            <input v-model="form.monthly_discount" class="form-control" type="text" placeholder="Monthly Discount" :class="{ 'is-invalid': form.errors.has('monthly_discount') }">
-                          </div>
-                          <div class="form-group col-sm-6">
-                            <input v-model="form.cable_cost" class="form-control" type="text" placeholder="Cable Cost" :class="{ 'is-invalid': form.errors.has('cable_cost') }">
-                          </div>
-                        </div>
-                      </div>
-                      <div class="modal-footer">
-                        <button class="btn btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
-                        <button v-show="!editmode" class="btn btn-success" type="submit">Create user</button>
-                        <button v-show="editmode" class="btn btn-success" type="submit">Update user</button>
-                      </div>
-                      </form>
-                    </div>
-                  </div>
-                </div>
       </section>
     </template>
 <script>
@@ -186,39 +73,15 @@
               type : 'Pending',
               keyword : '',
               editmode : false,
-              customers : {},
-              packages : {},
-              zones : {},
-              areas : {},
-              ids : [],
-              form: new Form({
-                id : '',
-                name : '',
-                fathers_name : '',
-                mothers_name : '',
-                username : '',
-                email : '',
-                cell_1 : '',
-                cell_2 : '',
-                package_id : '',
-                type : '',
-                zone_id : '',
-                area_id : '',
-                mikrotik_id : '',
-                remote_ip : '',
-                remote_mac : '',
-
-              })
+              requests : {}
             }
         },
         methods: {
           load(){
-            axios.get('/api/request/?type=' + this.type )
+            axios.get('/api/requests/?type=' + this.type )
             .then(( data ) => {
               console.log(data)
-              this.customers = data.data.customers;
-              this.packages = data.data.packages;
-              this.zones = data.data.areas;
+              this.requests = data.data.requests;
             } )
             .catch(() => {});
           },
@@ -238,11 +101,38 @@
             this.editmode = false;
             $('#appModal').modal('show');
           },
-          editModal( customer ){
-            this.editmode = true;
-            this.form.reset();
-            $('#appModal').modal('show');
-            this.form.fill( customer );
+          requestAction( requestID, type ) {
+            swal({
+              title: 'Are you sure to ' + type + ' this request?',
+              text: "Action will be taken as per your confirmation.",
+              type: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Yes, ' + type
+            }).then((result) => {
+              if (result.value) {
+                axios.get('/api/requests/action/' + requestID + '?type=' + type)
+                .then(( response ) => {
+                  console.log( response );
+                  Fire.$emit('AfterAction');
+
+                  if( response.data.success == true ) {
+                    swal(
+                      'Success!',
+                      'Your action has been successfully proccesed.',
+                      'success'
+                    )
+                  } else {
+                    swal(
+                      'Failed!',
+                      'Something went wrong while taking action.',
+                      'error'
+                    )
+                  }
+                }).catch(() => {})
+              }
+            });
           },
           create(){
             this.$Progress.start();

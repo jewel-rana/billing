@@ -14,7 +14,7 @@
                   </div>
                 </li> -->
                 <li class="nav-item">
-                  <a class="nav-link active" @click.prevent="fetchData('All')" href="#" role="tab">All</a>
+                  <router-link to="/dashboard/area" class="nav-link" role="tab">Back to Zones</router-link>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" @click.prevent="createModal" href="#"><span class="icon icon-user"></span> Add new</a>
@@ -31,20 +31,18 @@
                           <th>#</th>
                           <th>Area Name</th>
                           <th>Area Code</th>
-                          <th>Childs</th>
                           <th>Customers</th>
                           <th>Action</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-for="area in areas.data" :key="area.id">
+                        <tr v-for="area in areas" :key="area.id">
                           <th scope="row">{{ area.id }}</th>
                           <td>{{ area.name }}</td>
                           <td>{{ area.code }}</td>
-                          <td>{{ area.childs_count }}</td>
-                          <td>{{ area.customers_count }}</td>
+                          <td><router-link :to="'/dashboard/area/customer/' + area.id" class="btn btn-default">{{ area.area_customers_count }}</router-link></td>
                           <td>
-                            <router-link to="/dashboard/area/view/:key" class="btn btn-primary btn-sm"><span class="fa fa-eye"></span></router-link>
+                            <router-link :to="'/dashboard/area/customer/' + area.id" class="btn btn-primary btn-sm"><span class="fa fa-eye"></span></router-link>
                             <button @click="editModal( area )" class="btn btn-success btn-sm"><span class="fa fa-edit"></span></button>
                             <button @click="deleteArea( area.id )" class="btn btn-danger btn-sm"><span class="fa fa-times"></span></button>
                           </td>
@@ -82,8 +80,9 @@
                         </div>
                         <div class="form-group">
                             <select v-model="form.parent" class="form-control" :class="{ 'is-invalid': form.errors.has('parent') }">
-                              <option value="0" selected="selected">Select Parent</option>
-                              <option></option>
+                              <option value="0">Select Parent</option>
+                              <option v-for="parent in parents" :key="parent.id" v-if="form.id == parent.id" selected="selected" :value="parent.id">{{ parent.name }}</option>
+                              <option :value="parent.id" v-else>{{ parent.name }}</option>
                             </select>
                         </div>
                       </div>
@@ -105,6 +104,8 @@
               title : 'All Areas',
               editmode : false,
               areas : {},
+              parents : {},
+              id : this.$route.id,
               form: new Form({
                 id : '',
                 name : '',
@@ -115,7 +116,10 @@
         },
         methods: {
           load(){
-            axios.get('/api/area').then(( data ) => { this.areas = data.data } );
+            axios.get('/api/area/?id=' + this.$route.params.id ).then(( data ) => {
+              this.areas = data.data.data 
+              this.parents = data.parents.data;
+            } );
           },
           fetchData( type ){
             this.load();
@@ -140,7 +144,7 @@
                 //show notification
                 toast({
                   type: 'success',
-                  title: 'User created'
+                  title: 'Area created'
                 });
 
                 Fire.$emit('AfterAction');

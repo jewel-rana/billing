@@ -17,6 +17,18 @@
           <div class="table-responsive">
             <div class="tab-content" id="myTabContent">
               <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                <div class="row">
+                        <div class="col-md-3">
+                        </div>
+                        <div class="col-md-9 pull-right">
+                          <div class="input-group input-group mb-2">
+                            <input v-model="keyword" type="text" class="form-control" placeholder="Search here..." name="search">
+                            <span class="input-group-append">
+                              <button class="btn btn-sm btn-primary" type="button"><i class="fa fa-search"></i> Search</button>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     <table class="table table-striped table-bordered table-sm">
                       <thead>
                         <tr>
@@ -38,9 +50,8 @@
                           <td>{{ packege.bandwidth }}</td>
                           <td>{{ packege.customers_count }}</td>
                           <td>
-                            <router-link to="/dashboard/package/view/:key" class="btn btn-primary btn-sm"><span class="fa fa-eye"></span></router-link>
+                            <router-link :to="'/dashboard/package/view/' + packege.id" class="btn btn-primary btn-sm"><span class="fa fa-eye"></span></router-link>
                             <button @click="editModal( packege )" class="btn btn-success btn-sm"><span class="fa fa-edit"></span></button>
-                            <button @click="deletePackage( packege.id )" class="btn btn-danger btn-sm"><span class="fa fa-times"></span></button>
                           </td>
                         </tr>
                       </tbody>
@@ -115,6 +126,7 @@
               title : 'All Packages',
               editmode : false,
               packages : {},
+              keyword : '',
               form: new Form({
                 id : '',
                 name : '',

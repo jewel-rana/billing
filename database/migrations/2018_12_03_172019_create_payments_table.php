@@ -15,9 +15,9 @@ class CreatePaymentsTable extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('customer_id');
-            $table->integer('employee_id');
-            $table->integer('billing_id');
+            $table->integer('customer_id')->index();
+            $table->integer('employee_id')->index();
+            $table->integer('billing_id')->index();
             $table->double('payable_bill');
             $table->double('paid_amount');
             $table->double('instant_discount')->default(0);
